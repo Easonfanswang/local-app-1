@@ -15,6 +15,8 @@ import {
 } from "@shopify/polaris";
 import { TitleBar, useAppBridge } from "@shopify/app-bridge-react";
 import { authenticate } from "../shopify.server";
+import ImportProductBanner from "./components/ImportProductBanner";
+import ProductListCard from "./components/ProductListCard";
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
   await authenticate.admin(request);
@@ -112,14 +114,9 @@ export default function Index() {
 
   return (
     <Page>
-      <TitleBar title="Remix app template">
-        <button variant="primary" onClick={generateProduct}>
-          Generate a product
-        </button>
-      </TitleBar>
       <BlockStack gap="500">
         <Layout>
-          <Layout.Section>
+          {/* <Layout.Section>
             <Card>
               <BlockStack gap="500">
                 <BlockStack gap="200">
@@ -224,8 +221,14 @@ export default function Index() {
                 )}
               </BlockStack>
             </Card>
+          </Layout.Section> */}
+          <Layout.Section>
+            <ImportProductBanner />
           </Layout.Section>
-          <Layout.Section variant="oneThird">
+          <Layout.Section>
+            <ProductListCard />
+          </Layout.Section>
+          {/* <Layout.Section>
             <BlockStack gap="500">
               <Card>
                 <BlockStack gap="200">
@@ -326,7 +329,7 @@ export default function Index() {
                 </BlockStack>
               </Card>
             </BlockStack>
-          </Layout.Section>
+          </Layout.Section> */}
         </Layout>
       </BlockStack>
     </Page>
