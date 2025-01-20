@@ -1,11 +1,7 @@
 import { useEffect, useState } from "react";
 import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
 import { useFetcher } from "@remix-run/react";
-import {
-  Page,
-  Layout,
-  BlockStack,
-} from "@shopify/polaris";
+import { Page, Layout, BlockStack } from "@shopify/polaris";
 import { TitleBar, useAppBridge } from "@shopify/app-bridge-react";
 import { authenticate } from "../shopify.server";
 import ImportProductBanner from "./components/ImportProductBanner";
@@ -19,6 +15,11 @@ export interface ProductDataType {
   image: string[] | undefined;
 }
 
+export interface pageInfoType {
+  page: number;
+  totalPage: number;
+}
+
 export const loader = async ({ request }: LoaderFunctionArgs) => {
   await authenticate.admin(request);
   return null;
@@ -28,40 +29,46 @@ export const action = async ({ request }: ActionFunctionArgs) => {
   const formData = await request.formData();
   const formObject = Object.fromEntries(formData);
   if ("loading" in formObject) {
-    const data = [
-      {
-        id: 0,
-        title:
-          "VICHYIE Women Mock Neck Ribbed Bodycon Dress Long Sleeve Mini Pencil Dresses",
-        number: Math.floor(Math.random() * 100) + 1,
-        descriptionHtml: "<p>descriptionHtml</p>",
-        image: ["", ""],
+    const data = {
+      data: [
+        {
+          id: 0,
+          title:
+            "VICHYIE Women Mock Neck Ribbed Bodycon Dress Long Sleeve Mini Pencil Dresses",
+          number: Math.floor(Math.random() * 100) + 1,
+          descriptionHtml: "<p>descriptionHtml</p>",
+          image: ["", ""],
+        },
+        {
+          id: 1,
+          title:
+            "VICHYIE Women Mock Neck Ribbed Bodycon Dress Long Sleeve Mini Pencil Dresses",
+          number: Math.floor(Math.random() * 100) + 1,
+          descriptionHtml: "<p>descriptionHtml</p>",
+          image: ["", ""],
+        },
+        {
+          id: 2,
+          title:
+            "VICHYIE Women Mock Neck Ribbed Bodycon Dress Long Sleeve Mini Pencil Dresses",
+          number: Math.floor(Math.random() * 100) + 1,
+          descriptionHtml: "<p>descriptionHtml</p>",
+          image: ["", ""],
+        },
+        {
+          id: 3,
+          title:
+            "VICHYIE Women Mock Neck Ribbed Bodycon Dress Long Sleeve Mini Pencil Dresses",
+          number: Math.floor(Math.random() * 100) + 1,
+          descriptionHtml: "<p>descriptionHtml</p>",
+          image: ["", ""],
+        },
+      ],
+      pageInfo: {
+        page: 1,
+        totalPage: 30,
       },
-      {
-        id: 1,
-        title:
-          "VICHYIE Women Mock Neck Ribbed Bodycon Dress Long Sleeve Mini Pencil Dresses",
-        number: Math.floor(Math.random() * 100) + 1,
-        descriptionHtml: "<p>descriptionHtml</p>",
-        image: ["", ""],
-      },
-      {
-        id: 2,
-        title:
-          "VICHYIE Women Mock Neck Ribbed Bodycon Dress Long Sleeve Mini Pencil Dresses",
-        number: Math.floor(Math.random() * 100) + 1,
-        descriptionHtml: "<p>descriptionHtml</p>",
-        image: ["", ""],
-      },
-      {
-        id: 3,
-        title:
-          "VICHYIE Women Mock Neck Ribbed Bodycon Dress Long Sleeve Mini Pencil Dresses",
-        number: Math.floor(Math.random() * 100) + 1,
-        descriptionHtml: "<p>descriptionHtml</p>",
-        image: ["", ""],
-      },
-    ];
+    };
     // 处理第二个 fetcher 的请求
     console.log("data:", data);
     return data;
@@ -72,6 +79,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
 
 export default function Index() {
   const [productsData, setProductsData] = useState<ProductDataType[]>();
+  const [pageInfo, setPageInfo] = useState<pageInfoType>();
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const loadingFetcehr = useFetcher<any>();
 
@@ -89,7 +97,8 @@ export default function Index() {
   useEffect(() => {
     if (loadingFetcehr.data) {
       shopify.toast.show("Loading completed");
-      setProductsData(loadingFetcehr.data);
+      setProductsData(loadingFetcehr.data.data);
+      setPageInfo(loadingFetcehr.data.pageInfo);
       console.log(loadingFetcehr.data);
       setIsLoading(false);
     }
@@ -103,7 +112,11 @@ export default function Index() {
             <ImportProductBanner />
           </Layout.Section>
           <Layout.Section>
-            <ProductListCard loading={isLoading} productsData={productsData} />
+            <ProductListCard
+              loading={isLoading}
+              productsData={productsData}
+              pageInfo={pageInfo}
+            />
           </Layout.Section>
         </Layout>
       </BlockStack>

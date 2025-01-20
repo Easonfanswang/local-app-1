@@ -3,51 +3,125 @@ import {
   Grid,
   Icon,
   Layout,
+  Pagination,
   Select,
   Spinner,
   Text,
   TextField,
 } from "@shopify/polaris";
-import { useCallback, useState, useMemo } from "react";
+import { useCallback, useState, useMemo, useEffect } from "react";
 import { SearchIcon } from "@shopify/polaris-icons";
 import ProductCard from "./ProductCard";
-import { ProductDataType } from "../app._index";
+import { pageInfoType, ProductDataType } from "../app._index";
+import pkg from "lodash";
+const { debounce } = pkg;
+import { useFetcher } from "@remix-run/react";
 
 interface ProductListCardProps {
   loading: boolean;
   productsData: ProductDataType[] | undefined;
+  pageInfo: pageInfoType | undefined;
 }
 
 const ProductListCard: React.FC<ProductListCardProps> = ({
   loading,
   productsData,
+  pageInfo,
 }) => {
   const [searchValue, setSearchValue] = useState("");
   const [selected, setSelected] = useState("1");
+  const [currentPage, setCurrentPage] = useState<number>(pageInfo?.page || 1);
+  const [action, setAction] = useState<boolean>(false);
+  const fetcehr = useFetcher();
 
-  const options = [
-    { label: "All", value: "1" },
-    { label: "Imported to Shopify", value: "2" },
-    { label: "Not Imported", value: "3" },
-  ];
+  useEffect(() => {
+    if (fetcehr.data) {
+      setTimeout(() => {
+        setAction(false);
+      }, 3000);
+    }
+  }, [fetcehr.data]);
 
+  // 使用防抖处理搜索
+  const debouncedSearch = useCallback(
+    debounce((value: string) => {
+      setCurrentPage(1); // 重置页码到第一页
+      fetcehr.submit(
+        {
+          loading: JSON.stringify({
+            page: 1,
+            searchValue: value,
+            filter: selected,
+          }),
+        },
+        { method: "POST" },
+      );
+    }, 500),
+    [selected],
+  );
+
+  // 处理搜索输入
   const handleSearchChange = useCallback(
-    (newValue: string) => setSearchValue(newValue),
-    [],
+    (newValue: string) => {
+      setAction(true);
+      setSearchValue(newValue);
+      debouncedSearch(newValue);
+    },
+    [debouncedSearch],
   );
 
+  // 处理筛选变化
   const handleSelectChange = useCallback(
-    (value: string) => setSelected(value),
-    [],
+    (value: string) => {
+      setAction(true);
+      setSelected(value);
+      setCurrentPage(1);
+      fetcehr.submit(
+        {
+          loading: JSON.stringify({
+            page: 1,
+            searchValue,
+            filter: value,
+          }),
+        },
+        { method: "POST" },
+      );
+    },
+    [searchValue],
   );
 
-  // 过滤产品数据
-  const filteredProducts = useMemo(() => {
-    if (!productsData) return [];
-    return productsData.filter((product) =>
-      product.title.toLowerCase().includes(searchValue.toLowerCase())
+  // 处理分页事件
+  const handlePreviousPage = useCallback(() => {
+    if (currentPage > 1) {
+      setAction(true);
+      setCurrentPage((prev) => prev - 1);
+      fetcehr.submit(
+        {
+          loading: JSON.stringify({
+            page: currentPage - 1,
+            searchValue,
+            filter: selected,
+          }),
+        },
+        { method: "POST" },
+      );
+    }
+  }, [currentPage, searchValue, selected]);
+
+  const handleNextPage = useCallback(() => {
+    setAction(true);
+    setCurrentPage((prev) => prev + 1);
+    fetcehr.submit(
+      {
+        loading: JSON.stringify({
+          page: currentPage + 1,
+          searchValue,
+          filter: selected,
+        }),
+      },
+      { method: "POST" },
     );
-  }, [productsData, searchValue]);
+  }, [currentPage, searchValue, selected]);
 
   return (
     <Card>
@@ -76,20 +150,20 @@ const ProductListCard: React.FC<ProductListCardProps> = ({
           />
         </Layout.Section>
         <Layout.Section>
-          {loading ? (
+          {loading || action ? (
             <div
               style={{
                 display: "flex",
                 justifyContent: "center",
                 alignItems: "center",
-                minHeight: "200px", // 可以根据需要调整高度
+                minHeight: "200px",
               }}
             >
               <Spinner accessibilityLabel="Spinner example" size="large" />
             </div>
           ) : (
             <Grid>
-              {filteredProducts.map((productData: ProductDataType) => (
+              {productsData?.map((productData: ProductDataType) => (
                 <Grid.Cell
                   key={productData.id}
                   columnSpan={{ xs: 6, sm: 3, md: 3, lg: 3, xl: 3 }}
@@ -100,9 +174,34 @@ const ProductListCard: React.FC<ProductListCardProps> = ({
             </Grid>
           )}
         </Layout.Section>
+        <Layout.Section>
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+            }}
+          >
+            <Text as="p">
+              {pageInfo && `Page ${currentPage} of ${pageInfo?.totalPage || 1}`}
+            </Text>
+            <Pagination
+              hasPrevious={currentPage > 1}
+              onPrevious={handlePreviousPage}
+              hasNext={pageInfo ? currentPage != pageInfo?.totalPage : false}
+              onNext={handleNextPage}
+            />
+          </div>
+        </Layout.Section>
       </Layout>
     </Card>
   );
 };
+
+const options = [
+  { label: "All", value: "1" },
+  { label: "Imported to Shopify", value: "2" },
+  { label: "Not Imported", value: "3" },
+];
 
 export default ProductListCard;
