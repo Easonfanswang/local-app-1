@@ -64,6 +64,10 @@ const ProductDetailsModal: React.FC<ProductDetailsModalProps> = ({
                 border: "1px solid #e6e6e6",
                 borderRadius: "8px",
                 padding: "10px",
+                height: "480px",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
               }}
             >
               <img
