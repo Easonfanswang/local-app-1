@@ -1,8 +1,9 @@
 # Learn more about configuring your app at https://shopify.dev/docs/apps/tools/cli/configuration
+
 client_id = "9b9d33f676295968d460122290321a4c"
 name = "local-app-1"
 handle = "local-app-27"
-application_url = "https://ky-closes-allowance-mail.trycloudflare.com"
+application_url = "https://pat-consumer-modelling-believed.trycloudflare.com"
 embedded = true
 
 [build]
@@ -16,21 +17,21 @@ scopes = "write_products"
 
 [auth]
 redirect_urls = [
-  "https://ky-closes-allowance-mail.trycloudflare.com/auth/callback",
-  "https://ky-closes-allowance-mail.trycloudflare.com/auth/shopify/callback",
-  "https://ky-closes-allowance-mail.trycloudflare.com/api/auth/callback"
+  "https://pat-consumer-modelling-believed.trycloudflare.com/auth/callback",
+  "https://pat-consumer-modelling-believed.trycloudflare.com/auth/shopify/callback",
+  "https://pat-consumer-modelling-believed.trycloudflare.com/api/auth/callback"
 ]
 
 [webhooks]
 api_version = "2025-01"
 
-[[webhooks.subscriptions]]
-topics = ["app/scopes_update"]
-uri = "/webhooks/app/scopes_update"
+  [[webhooks.subscriptions]]
+  topics = [ "app/scopes_update" ]
+  uri = "/webhooks/app/scopes_update"
 
-[[webhooks.subscriptions]]
-topics = ["app/uninstalled"]
-uri = "/webhooks/app/uninstalled"
+  [[webhooks.subscriptions]]
+  topics = [ "app/uninstalled" ]
+  uri = "/webhooks/app/uninstalled"
 
 [pos]
 embedded = false

@@ -1,8 +1,5 @@
-import { useEffect, useState } from "react";
 import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
-import { useFetcher } from "@remix-run/react";
 import { Page, Layout, BlockStack } from "@shopify/polaris";
-import { TitleBar, useAppBridge } from "@shopify/app-bridge-react";
 import { authenticate } from "../shopify.server";
 import ImportProductBanner from "./components/ImportProductBanner";
 import ProductListCard from "./components/ProductListCard";
@@ -24,7 +21,16 @@ export const action = async ({ request }: ActionFunctionArgs) => {
             "VICHYIE Women Mock Neck Ribbed Bodycon Dress Long Sleeve Mini Pencil Dresses",
           number: Math.floor(Math.random() * 100) + 1,
           descriptionHtml: "<p>descriptionHtml</p>",
-          image: ["", ""],
+          image: [
+            "https://m.media-amazon.com/images/I/71tvcLXujtL._AC_SL1500_.jpg",
+            "https://m.media-amazon.com/images/I/71tvcLXujtL._AC_SL1500_.jpg",
+            "https://m.media-amazon.com/images/I/71tvcLXujtL._AC_SL1500_.jpg",
+            "https://m.media-amazon.com/images/I/71tvcLXujtL._AC_SL1500_.jpg",
+            "https://m.media-amazon.com/images/I/71tvcLXujtL._AC_SL1500_.jpg",
+            "https://m.media-amazon.com/images/I/71tvcLXujtL._AC_SL1500_.jpg",
+            "https://m.media-amazon.com/images/I/71tvcLXujtL._AC_SL1500_.jpg",
+            "https://m.media-amazon.com/images/I/71tvcLXujtL._AC_SL1500_.jpg",
+          ],
         },
         {
           id: 1,
@@ -65,8 +71,6 @@ export const action = async ({ request }: ActionFunctionArgs) => {
 };
 
 export default function Index() {
-  const shopify = useAppBridge();
-
   return (
     <Page>
       <BlockStack gap="500">
