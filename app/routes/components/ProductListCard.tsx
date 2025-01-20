@@ -23,6 +23,8 @@ export interface ProductDataType {
   number: number;
   descriptionHtml: string | undefined;
   image: string[] | undefined;
+  shopifyUrl: string;
+  amazonUrl: string;
 }
 
 export interface pageInfoType {
@@ -35,7 +37,6 @@ interface ProductListCardProps {}
 const ProductListCard: React.FC<ProductListCardProps> = () => {
   const [productsData, setProductsData] = useState<ProductDataType[]>();
   const [pageInfo, setPageInfo] = useState<pageInfoType>();
-  const [visible, setVisible] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [searchValue, setSearchValue] = useState("");
   const [selected, setSelected] = useState("1");
