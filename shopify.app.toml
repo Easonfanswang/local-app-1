@@ -3,7 +3,7 @@
 client_id = "9b9d33f676295968d460122290321a4c"
 name = "local-app-1"
 handle = "local-app-27"
-application_url = "https://bg-opened-galaxy-sustained.trycloudflare.com"
+application_url = "https://pat-consumer-modelling-believed.trycloudflare.com"
 embedded = true
 
 [build]
@@ -17,9 +17,9 @@ scopes = "write_products"
 
 [auth]
 redirect_urls = [
-  "https://bg-opened-galaxy-sustained.trycloudflare.com/auth/callback",
-  "https://bg-opened-galaxy-sustained.trycloudflare.com/auth/shopify/callback",
-  "https://bg-opened-galaxy-sustained.trycloudflare.com/api/auth/callback"
+  "https://pat-consumer-modelling-believed.trycloudflare.com/auth/callback",
+  "https://pat-consumer-modelling-believed.trycloudflare.com/auth/shopify/callback",
+  "https://pat-consumer-modelling-believed.trycloudflare.com/api/auth/callback"
 ]
 
 [webhooks]
