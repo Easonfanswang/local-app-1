@@ -1,5 +1,5 @@
 import { BlockStack, Card, Image, Text } from "@shopify/polaris";
-import { ProductDataType } from "../app._index";
+import { ProductDataType } from "./ProductListCard";
 
 interface ProductCardProps {
   productData: ProductDataType;

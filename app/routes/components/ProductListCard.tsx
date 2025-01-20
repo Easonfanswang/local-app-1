@@ -12,33 +12,60 @@ import {
 import { useCallback, useState, useMemo, useEffect } from "react";
 import { SearchIcon } from "@shopify/polaris-icons";
 import ProductCard from "./ProductCard";
-import { pageInfoType, ProductDataType } from "../app._index";
 import pkg from "lodash";
 const { debounce } = pkg;
 import { useFetcher } from "@remix-run/react";
 
-interface ProductListCardProps {
-  loading: boolean;
-  productsData: ProductDataType[] | undefined;
-  pageInfo: pageInfoType | undefined;
+export interface ProductDataType {
+  id: number;
+  title: string;
+  number: number;
+  descriptionHtml: string | undefined;
+  image: string[] | undefined;
 }
 
-const ProductListCard: React.FC<ProductListCardProps> = ({
-  loading,
-  productsData,
-  pageInfo,
-}) => {
+export interface pageInfoType {
+  page: number;
+  totalPage: number;
+}
+
+interface ProductListCardProps {}
+
+const ProductListCard: React.FC<ProductListCardProps> = () => {
+  const [productsData, setProductsData] = useState<ProductDataType[]>();
+  const [pageInfo, setPageInfo] = useState<pageInfoType>();
+  const [isLoading, setIsLoading] = useState<boolean>(true);
   const [searchValue, setSearchValue] = useState("");
   const [selected, setSelected] = useState("1");
   const [currentPage, setCurrentPage] = useState<number>(pageInfo?.page || 1);
   const [action, setAction] = useState<boolean>(false);
-  const fetcehr = useFetcher();
+  const fetcehr = useFetcher<any>();
+
+  useEffect(() => {
+    setTimeout(() => {
+      fetcehr.submit(
+        {
+          loading: JSON.stringify({
+            loading: JSON.stringify({
+              page: 1,
+              searchValue: "",
+              filter: "1",
+            }),
+          }),
+        },
+        { method: "POST" },
+      );
+    }, 3000);
+  }, []);
 
   useEffect(() => {
     if (fetcehr.data) {
-      setTimeout(() => {
-        setAction(false);
-      }, 3000);
+      shopify.toast.show("Loading completed");
+      setProductsData(fetcehr.data.data);
+      setPageInfo(fetcehr.data.pageInfo);
+      console.log(fetcehr.data);
+      setIsLoading(false);
+      setAction(false);
     }
   }, [fetcehr.data]);
 
@@ -150,7 +177,7 @@ const ProductListCard: React.FC<ProductListCardProps> = ({
           />
         </Layout.Section>
         <Layout.Section>
-          {loading || action ? (
+          {isLoading || action ? (
             <div
               style={{
                 display: "flex",

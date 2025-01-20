@@ -7,19 +7,6 @@ import { authenticate } from "../shopify.server";
 import ImportProductBanner from "./components/ImportProductBanner";
 import ProductListCard from "./components/ProductListCard";
 
-export interface ProductDataType {
-  id: number;
-  title: string;
-  number: number;
-  descriptionHtml: string | undefined;
-  image: string[] | undefined;
-}
-
-export interface pageInfoType {
-  page: number;
-  totalPage: number;
-}
-
 export const loader = async ({ request }: LoaderFunctionArgs) => {
   await authenticate.admin(request);
   return null;
@@ -78,31 +65,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
 };
 
 export default function Index() {
-  const [productsData, setProductsData] = useState<ProductDataType[]>();
-  const [pageInfo, setPageInfo] = useState<pageInfoType>();
-  const [isLoading, setIsLoading] = useState<boolean>(true);
-  const loadingFetcehr = useFetcher<any>();
-
   const shopify = useAppBridge();
-
-  useEffect(() => {
-    setTimeout(() => {
-      loadingFetcehr.submit(
-        { loading: JSON.stringify({ data: true }) },
-        { method: "POST" },
-      );
-    }, 3000);
-  }, []);
-
-  useEffect(() => {
-    if (loadingFetcehr.data) {
-      shopify.toast.show("Loading completed");
-      setProductsData(loadingFetcehr.data.data);
-      setPageInfo(loadingFetcehr.data.pageInfo);
-      console.log(loadingFetcehr.data);
-      setIsLoading(false);
-    }
-  }, [loadingFetcehr.data]);
 
   return (
     <Page>
@@ -112,11 +75,7 @@ export default function Index() {
             <ImportProductBanner />
           </Layout.Section>
           <Layout.Section>
-            <ProductListCard
-              loading={isLoading}
-              productsData={productsData}
-              pageInfo={pageInfo}
-            />
+            <ProductListCard />
           </Layout.Section>
         </Layout>
       </BlockStack>
