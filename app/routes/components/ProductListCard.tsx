@@ -15,6 +15,7 @@ import ProductCard from "./ProductCard";
 import pkg from "lodash";
 const { debounce } = pkg;
 import { useFetcher } from "@remix-run/react";
+import ProductDetailsModal from "./ProductDetailsModal";
 
 export interface ProductDataType {
   id: number;
@@ -34,12 +35,16 @@ interface ProductListCardProps {}
 const ProductListCard: React.FC<ProductListCardProps> = () => {
   const [productsData, setProductsData] = useState<ProductDataType[]>();
   const [pageInfo, setPageInfo] = useState<pageInfoType>();
+  const [visible, setVisible] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [searchValue, setSearchValue] = useState("");
   const [selected, setSelected] = useState("1");
   const [currentPage, setCurrentPage] = useState<number>(pageInfo?.page || 1);
   const [action, setAction] = useState<boolean>(false);
   const fetcehr = useFetcher<any>();
+  const [modalOpen, setModalOpen] = useState(false);
+  const [selectedProduct, setSelectedProduct] =
+    useState<ProductDataType | null>(null);
 
   useEffect(() => {
     setTimeout(() => {
@@ -150,78 +155,95 @@ const ProductListCard: React.FC<ProductListCardProps> = () => {
     );
   }, [currentPage, searchValue, selected]);
 
+  const handleCardClick = useCallback((productData: ProductDataType) => {
+    setSelectedProduct(productData);
+    setModalOpen(true);
+  }, []);
+
   return (
-    <Card>
-      <Layout>
-        <Layout.Section>
-          <Text as="h1" variant="headingSm" fontWeight="bold">
-            Products fetched from Amazon
-          </Text>
-        </Layout.Section>
-        <Layout.Section>
-          <TextField
-            label="Search Products"
-            placeholder="Search products by title"
-            value={searchValue}
-            onChange={handleSearchChange}
-            prefix={<Icon source={SearchIcon} tone="base" />}
-            autoComplete="off"
-          />
-        </Layout.Section>
-        <Layout.Section variant="oneThird">
-          <Select
-            label="Date range"
-            options={options}
-            onChange={handleSelectChange}
-            value={selected}
-          />
-        </Layout.Section>
-        <Layout.Section>
-          {isLoading || action ? (
+    <div>
+      <Card>
+        <Layout>
+          <Layout.Section>
+            <Text as="h1" variant="headingSm" fontWeight="bold">
+              Products fetched from Amazon
+            </Text>
+          </Layout.Section>
+          <Layout.Section>
+            <TextField
+              label="Search Products"
+              placeholder="Search products by title"
+              value={searchValue}
+              onChange={handleSearchChange}
+              prefix={<Icon source={SearchIcon} tone="base" />}
+              autoComplete="off"
+            />
+          </Layout.Section>
+          <Layout.Section variant="oneThird">
+            <Select
+              label="Date range"
+              options={options}
+              onChange={handleSelectChange}
+              value={selected}
+            />
+          </Layout.Section>
+          <Layout.Section>
+            {isLoading || action ? (
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "center",
+                  alignItems: "center",
+                  minHeight: "200px",
+                }}
+              >
+                <Spinner accessibilityLabel="Spinner example" size="large" />
+              </div>
+            ) : (
+              <Grid>
+                {productsData?.map((productData: ProductDataType) => (
+                  <Grid.Cell
+                    key={productData.id}
+                    columnSpan={{ xs: 6, sm: 3, md: 3, lg: 3, xl: 3 }}
+                  >
+                    <ProductCard
+                      productData={productData}
+                      onCardClick={handleCardClick}
+                    />
+                  </Grid.Cell>
+                ))}
+              </Grid>
+            )}
+          </Layout.Section>
+          <Layout.Section>
             <div
               style={{
                 display: "flex",
-                justifyContent: "center",
-                alignItems: "center",
-                minHeight: "200px",
+                flexDirection: "column", // 改为纵向排列
+                alignItems: "center", // 水平居中
+                gap: "8px", // 添加间距
               }}
             >
-              <Spinner accessibilityLabel="Spinner example" size="large" />
+              <Pagination
+                label={
+                  pageInfo &&
+                  `Page ${currentPage} of ${pageInfo?.totalPage || 1}`
+                }
+                hasPrevious={currentPage > 1}
+                onPrevious={handlePreviousPage}
+                hasNext={pageInfo ? currentPage != pageInfo?.totalPage : false}
+                onNext={handleNextPage}
+              />
             </div>
-          ) : (
-            <Grid>
-              {productsData?.map((productData: ProductDataType) => (
-                <Grid.Cell
-                  key={productData.id}
-                  columnSpan={{ xs: 6, sm: 3, md: 3, lg: 3, xl: 3 }}
-                >
-                  <ProductCard productData={productData} />
-                </Grid.Cell>
-              ))}
-            </Grid>
-          )}
-        </Layout.Section>
-        <Layout.Section>
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "center",
-            }}
-          >
-            <Text as="p">
-              {pageInfo && `Page ${currentPage} of ${pageInfo?.totalPage || 1}`}
-            </Text>
-            <Pagination
-              hasPrevious={currentPage > 1}
-              onPrevious={handlePreviousPage}
-              hasNext={pageInfo ? currentPage != pageInfo?.totalPage : false}
-              onNext={handleNextPage}
-            />
-          </div>
-        </Layout.Section>
-      </Layout>
-    </Card>
+          </Layout.Section>
+        </Layout>
+      </Card>
+      <ProductDetailsModal
+        open={modalOpen}
+        onClose={() => setModalOpen(false)}
+        product={selectedProduct}
+      />
+    </div>
   );
 };
 
