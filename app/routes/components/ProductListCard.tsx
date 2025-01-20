@@ -1,84 +1,234 @@
 import {
-    Card,
-    Grid,
-    Icon,
-    Layout,
-    Select,
-    Text,
-    TextField,
-  } from "@shopify/polaris";
-  import { useCallback, useState } from "react";
-  import { SearchIcon } from "@shopify/polaris-icons";
-  import ProductCard from "./ProductCard";
-  
-  interface ProductListCardProps {}
-  
-  const ProductListCard: React.FC<ProductListCardProps> = () => {
-    const [value, setValue] = useState("");
-    const [selected, setSelected] = useState("1");
-  
-    const options = [
-      { label: "All", value: "1" },
-      { label: "Imported to Shopify", value: "2" },
-      { label: "Not Imported", value: "3" },
-    ];
-  
-    const handleChange = useCallback(
-      (newValue: string) => setValue(newValue),
-      [],
+  Card,
+  Grid,
+  Icon,
+  Layout,
+  Pagination,
+  Select,
+  Spinner,
+  Text,
+  TextField,
+} from "@shopify/polaris";
+import { useCallback, useState, useMemo, useEffect } from "react";
+import { SearchIcon } from "@shopify/polaris-icons";
+import ProductCard from "./ProductCard";
+import pkg from "lodash";
+const { debounce } = pkg;
+import { useFetcher } from "@remix-run/react";
+
+export interface ProductDataType {
+  id: number;
+  title: string;
+  number: number;
+  descriptionHtml: string | undefined;
+  image: string[] | undefined;
+}
+
+export interface pageInfoType {
+  page: number;
+  totalPage: number;
+}
+
+interface ProductListCardProps {}
+
+const ProductListCard: React.FC<ProductListCardProps> = () => {
+  const [productsData, setProductsData] = useState<ProductDataType[]>();
+  const [pageInfo, setPageInfo] = useState<pageInfoType>();
+  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [searchValue, setSearchValue] = useState("");
+  const [selected, setSelected] = useState("1");
+  const [currentPage, setCurrentPage] = useState<number>(pageInfo?.page || 1);
+  const [action, setAction] = useState<boolean>(false);
+  const fetcehr = useFetcher<any>();
+
+  useEffect(() => {
+    setTimeout(() => {
+      fetcehr.submit(
+        {
+          loading: JSON.stringify({
+            loading: JSON.stringify({
+              page: 1,
+              searchValue: "",
+              filter: "1",
+            }),
+          }),
+        },
+        { method: "POST" },
+      );
+    }, 3000);
+  }, []);
+
+  useEffect(() => {
+    if (fetcehr.data) {
+      shopify.toast.show("Loading completed");
+      setProductsData(fetcehr.data.data);
+      setPageInfo(fetcehr.data.pageInfo);
+      console.log(fetcehr.data);
+      setIsLoading(false);
+      setAction(false);
+    }
+  }, [fetcehr.data]);
+
+  // 使用防抖处理搜索
+  const debouncedSearch = useCallback(
+    debounce((value: string) => {
+      setCurrentPage(1); // 重置页码到第一页
+      fetcehr.submit(
+        {
+          loading: JSON.stringify({
+            page: 1,
+            searchValue: value,
+            filter: selected,
+          }),
+        },
+        { method: "POST" },
+      );
+    }, 500),
+    [selected],
+  );
+
+  // 处理搜索输入
+  const handleSearchChange = useCallback(
+    (newValue: string) => {
+      setAction(true);
+      setSearchValue(newValue);
+      debouncedSearch(newValue);
+    },
+    [debouncedSearch],
+  );
+
+  // 处理筛选变化
+  const handleSelectChange = useCallback(
+    (value: string) => {
+      setAction(true);
+      setSelected(value);
+      setCurrentPage(1);
+      fetcehr.submit(
+        {
+          loading: JSON.stringify({
+            page: 1,
+            searchValue,
+            filter: value,
+          }),
+        },
+        { method: "POST" },
+      );
+    },
+    [searchValue],
+  );
+
+  // 处理分页事件
+  const handlePreviousPage = useCallback(() => {
+    if (currentPage > 1) {
+      setAction(true);
+      setCurrentPage((prev) => prev - 1);
+      fetcehr.submit(
+        {
+          loading: JSON.stringify({
+            page: currentPage - 1,
+            searchValue,
+            filter: selected,
+          }),
+        },
+        { method: "POST" },
+      );
+    }
+  }, [currentPage, searchValue, selected]);
+
+  const handleNextPage = useCallback(() => {
+    setAction(true);
+    setCurrentPage((prev) => prev + 1);
+    fetcehr.submit(
+      {
+        loading: JSON.stringify({
+          page: currentPage + 1,
+          searchValue,
+          filter: selected,
+        }),
+      },
+      { method: "POST" },
     );
-  
-    const handleSelectChange = useCallback(
-      (value: string) => setSelected(value),
-      [],
-    );
-  
-    return (
-      <Card>
-        <Layout>
-          <Layout.Section>
-            <Text as="h1" variant="headingSm" fontWeight="bold">
-              Products fetched from Amazon
-            </Text>
-          </Layout.Section>
-          <Layout.Section>
-            <TextField
-              label="Product URL"
-              placeholder="search products by title"
-              value={value}
-              onChange={handleChange}
-              prefix={<Icon source={SearchIcon} tone="base" />}
-              autoComplete="off"
-            />
-          </Layout.Section>
-          <Layout.Section variant="oneThird">
-            <Select
-              label="Date range"
-              options={options}
-              onChange={handleSelectChange}
-              value={selected}
-            />
-          </Layout.Section>
-          <Layout.Section>
+  }, [currentPage, searchValue, selected]);
+
+  return (
+    <Card>
+      <Layout>
+        <Layout.Section>
+          <Text as="h1" variant="headingSm" fontWeight="bold">
+            Products fetched from Amazon
+          </Text>
+        </Layout.Section>
+        <Layout.Section>
+          <TextField
+            label="Search Products"
+            placeholder="Search products by title"
+            value={searchValue}
+            onChange={handleSearchChange}
+            prefix={<Icon source={SearchIcon} tone="base" />}
+            autoComplete="off"
+          />
+        </Layout.Section>
+        <Layout.Section variant="oneThird">
+          <Select
+            label="Date range"
+            options={options}
+            onChange={handleSelectChange}
+            value={selected}
+          />
+        </Layout.Section>
+        <Layout.Section>
+          {isLoading || action ? (
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+                minHeight: "200px",
+              }}
+            >
+              <Spinner accessibilityLabel="Spinner example" size="large" />
+            </div>
+          ) : (
             <Grid>
-              <Grid.Cell columnSpan={{ xs: 6, sm: 3, md: 3, lg: 3, xl: 3 }}>
-                <ProductCard number={45} />
-              </Grid.Cell>
-              <Grid.Cell columnSpan={{ xs: 6, sm: 3, md: 3, lg: 3, xl: 3 }}>
-                <ProductCard number={12} />
-              </Grid.Cell>
-              <Grid.Cell columnSpan={{ xs: 6, sm: 3, md: 3, lg: 3, xl: 3 }}>
-                <ProductCard number={23} />
-              </Grid.Cell>
-              <Grid.Cell columnSpan={{ xs: 6, sm: 3, md: 3, lg: 3, xl: 3 }}>
-                <ProductCard number={4} />
-              </Grid.Cell>
+              {productsData?.map((productData: ProductDataType) => (
+                <Grid.Cell
+                  key={productData.id}
+                  columnSpan={{ xs: 6, sm: 3, md: 3, lg: 3, xl: 3 }}
+                >
+                  <ProductCard productData={productData} />
+                </Grid.Cell>
+              ))}
             </Grid>
-          </Layout.Section>
-        </Layout>
-      </Card>
-    );
-  };
-  
-  export default ProductListCard;
-  
+          )}
+        </Layout.Section>
+        <Layout.Section>
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+            }}
+          >
+            <Text as="p">
+              {pageInfo && `Page ${currentPage} of ${pageInfo?.totalPage || 1}`}
+            </Text>
+            <Pagination
+              hasPrevious={currentPage > 1}
+              onPrevious={handlePreviousPage}
+              hasNext={pageInfo ? currentPage != pageInfo?.totalPage : false}
+              onNext={handleNextPage}
+            />
+          </div>
+        </Layout.Section>
+      </Layout>
+    </Card>
+  );
+};
+
+const options = [
+  { label: "All", value: "1" },
+  { label: "Imported to Shopify", value: "2" },
+  { label: "Not Imported", value: "3" },
+];
+
+export default ProductListCard;
