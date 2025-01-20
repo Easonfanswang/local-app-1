@@ -1,20 +1,25 @@
 import { BlockStack, Card, Image, Text } from "@shopify/polaris";
+import { ProductDataType } from "../app._index";
 
 interface ProductCardProps {
-  number: number;
+  productData: ProductDataType;
 }
 
-const ProductCard: React.FC<ProductCardProps> = ({ number }) => {
+const ProductCard: React.FC<ProductCardProps> = ({ productData }) => {
   return (
     <Card>
       <BlockStack gap="100">
-        <Image alt="product image" source="" height={180} width={180}></Image>
+        <Image
+          alt="product image"
+          source={productData.image?.[0] || ""}
+          height={180}
+          width={180}
+        ></Image>
         <Text as="h1" variant="headingSm" fontWeight="bold" truncate={true}>
-          VICHYIE Women Mock Neck Ribbed Bodycon Dress Long Sleeve Mini Pencil
-          Dresses
+          {productData.title}
         </Text>
         <Text as="p" variant="bodyXs" truncate={true}>
-          Contains total {number} variation(s)
+          Contains total {productData.number} variation(s)
         </Text>
       </BlockStack>
     </Card>
