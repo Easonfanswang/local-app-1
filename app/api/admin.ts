@@ -24,7 +24,6 @@ export const productMutations = async ({
   if (data?.productOptions) {
     productOptions = convertOptionsFormat(data?.productOptions);
   }
-
   try {
     // 创建产品
     const response = await admin.graphql(
@@ -74,11 +73,14 @@ export const productMutations = async ({
 
     const res = await response.json();
     const productId = res.data.productCreate.product.id;
+    const firstVariantId = res.data.productCreate.product.variants.edges[0].node.id;
+  
     // 并行执行变体创建和模拟存储
     await Promise.all([
       productVariantsMutations({
         request,
         productId,
+        firstVariantId,
         data: data.variants,
       }),
       storeProductId(productId),
@@ -104,19 +106,59 @@ export const productMutations = async ({
 export const productVariantsMutations = async ({
   request,
   productId,
+  firstVariantId,
   data,
 }: {
   request: Request;
   productId: string;
+  firstVariantId: string;
   data: VariantDataType[];
 }) => {
   const { admin } = await authenticate.admin(request);
-  const variantsInput = data.map((variant) => {
+  const firstVariantsInput = [
+    {
+      id: firstVariantId,
+      price: data[0].price.amount,
+    },
+  ];
+  const remainVariantsInput = data.slice(1).map((variant) => {
     return {
-      price: variant.price,
+      price: variant.price.amount,
       optionValues: variant.optionValues,
     };
   });
+  try {
+    const response = await admin.graphql(
+      `#graphql
+      mutation productVariantsBulkUpdate($productId: ID!, $variants: [ProductVariantsBulkInput!]!) {
+        productVariantsBulkUpdate(productId: $productId, variants: $variants) {
+          productVariants {
+            id
+            title
+            selectedOptions {
+              name
+              value
+            }
+          }
+          userErrors {
+            field
+            message
+          }
+        }
+      }`,
+      {
+        variables: {
+          productId: productId,
+          variants: firstVariantsInput,
+        },
+      },
+    );
+    const res = await response.json();
+    console.log(res.data.productVariantsBulkUpdate);
+  } catch (error) {
+    console.log("admin productVariantsMutations ERROR: ", error);
+  }
+
   try {
     const response = await admin.graphql(
       `#graphql
@@ -139,12 +181,12 @@ export const productVariantsMutations = async ({
       {
         variables: {
           productId: productId,
-          variantsInput: variantsInput,
+          variantsInput: remainVariantsInput,
         },
       },
     );
     const res = await response.json();
-    console.log(res.data);
+    console.log(res.data.productVariantsBulkCreate);
   } catch (error) {
     console.log("admin productVariantsMutations ERROR: ", error);
   }

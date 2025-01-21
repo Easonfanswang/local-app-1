@@ -69,7 +69,7 @@ const generateRandomData = () => {
   return Array(12)
     .fill(null)
     .map((_, index) => ({
-      id: index + 1,
+      id: (index + 1).toString(),
       title: generateRandomTitle(),
       number: Math.floor(Math.random() * 100) + 1,
       descriptionHtml: generateRandomDescription(),
@@ -79,97 +79,124 @@ const generateRandomData = () => {
       },
       variants: [
         {
-          id: 0,
+          id: "0",
           optionValues: [
             { optionName: "Color", name: "Red" },
             { optionName: "Size", name: "Small" },
           ],
           image:
             "https://m.media-amazon.com/images/I/71rPUJ72P5L._AC_SL1500_.jpg",
-          price: 100,
+          price: {
+            currencyCode: "USD",
+            amount: 100,
+          },
         },
         {
-          id: 1,
+          id: "1",
           optionValues: [
             { optionName: "Color", name: "Red" },
             { optionName: "Size", name: "Medium" },
           ],
           image:
             "https://m.media-amazon.com/images/I/71rPUJ72P5L._AC_SL1500_.jpg",
-          price: 110,
+          price: {
+            currencyCode: "USD",
+            amount: 140,
+          },
         },
         {
-          id: 2,
+          id: "2",
           optionValues: [
             { optionName: "Color", name: "Red" },
             { optionName: "Size", name: "Large" },
           ],
           image:
             "https://m.media-amazon.com/images/I/71rPUJ72P5L._AC_SL1500_.jpg",
-          price: 120,
+          price: {
+            currencyCode: "USD",
+            amount: 120,
+          },
         },
         {
-          id: 3,
+          id: "3",
           optionValues: [
             { optionName: "Color", name: "Green" },
             { optionName: "Size", name: "Small" },
           ],
           image:
             "https://m.media-amazon.com/images/I/71rPUJ72P5L._AC_SL1500_.jpg",
-          price: 130,
+          price: {
+            currencyCode: "USD",
+            amount: 130,
+          },
         },
         {
-          id: 4,
+          id: "4",
           optionValues: [
             { optionName: "Color", name: "Green" },
             { optionName: "Size", name: "Medium" },
           ],
           image:
             "https://m.media-amazon.com/images/I/71rPUJ72P5L._AC_SL1500_.jpg",
-          price: 140,
+          price: {
+            currencyCode: "USD",
+            amount: 120,
+          },
         },
         {
-          id: 5,
+          id: "5",
           optionValues: [
             { optionName: "Color", name: "Green" },
             { optionName: "Size", name: "Large" },
           ],
           image:
             "https://m.media-amazon.com/images/I/71rPUJ72P5L._AC_SL1500_.jpg",
-          price: 150,
+          price: {
+            currencyCode: "USD",
+            amount: 130,
+          },
         },
         {
-          id: 6,
+          id: "6",
           optionValues: [
             { optionName: "Color", name: "Blue" },
             { optionName: "Size", name: "Small" },
           ],
           image:
             "https://m.media-amazon.com/images/I/71rPUJ72P5L._AC_SL1500_.jpg",
-          price: 160,
+          price: {
+            currencyCode: "USD",
+            amount: 180,
+          },
         },
         {
-          id: 7,
+          id: "7",
           optionValues: [
             { optionName: "Color", name: "Blue" },
             { optionName: "Size", name: "Medium" },
           ],
           image:
             "https://m.media-amazon.com/images/I/71rPUJ72P5L._AC_SL1500_.jpg",
-          price: 170,
+          price: {
+            currencyCode: "USD",
+            amount: 140,
+          },
         },
         {
-          id: 8,
+          id: "8",
           optionValues: [
             { optionName: "Color", name: "Blue" },
             { optionName: "Size", name: "Large" },
           ],
           image:
             "https://m.media-amazon.com/images/I/71rPUJ72P5L._AC_SL1500_.jpg",
-          price: 180,
+          price: {
+            currencyCode: "USD",
+            amount: 160,
+          },
         },
       ],
-      image: [
+      images: [
         "https://m.media-amazon.com/images/I/71rPUJ72P5L._AC_SL1500_.jpg",
         "https://m.media-amazon.com/images/I/71rPUJ72P5L._AC_SL1500_.jpg",
       ],

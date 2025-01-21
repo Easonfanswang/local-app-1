@@ -3,10 +3,13 @@ import { ProductDataType } from "./ProductListCard";
 import {
   Link,
   useFetcher,
-  useActionData,
-  useNavigation,
 } from "@remix-run/react";
 import { useEffect, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import {
+  selectProductById,
+  updateData,
+} from "app/store/modules/productImportState";
 
 interface ProductCardProps {
   shop: string;
@@ -21,12 +24,18 @@ const ProductCard: React.FC<ProductCardProps> = ({
 }) => {
   const fetcher = useFetcher<any>();
   // const actionData = useActionData<any>();
-  const navigation = useNavigation();
-  const [isImporting, setIsImporting] = useState(false);
-  const [shopifyUrl, setShopifyUrl] = useState<string>(productData.shopifyUrl);
+  const dispatch = useDispatch();
+  const state = useSelector((state: any) =>
+    selectProductById(state, productData.id),
+  );
 
-  const handleImport = async () => {
-    setIsImporting(true);
+  const handleImport = async ({ id }: { id: string }) => {
+    dispatch(
+      updateData({
+        id: productData.id,
+        loading: true,
+      }),
+    );
     fetcher.submit(
       {
         productData: JSON.stringify(productData),
@@ -37,10 +46,15 @@ const ProductCard: React.FC<ProductCardProps> = ({
 
   useEffect(() => {
     if (fetcher.state === "idle" && fetcher.data?.success) {
-      setIsImporting(false);
       const shopName = shop.split(".")[0];
       const url = `https://admin.shopify.com/store/${shopName}/products/${fetcher.data.id}`;
-      setShopifyUrl(url);
+      dispatch(
+        updateData({
+          id: productData.id,
+          loading: true,
+          shopifyUrl: url,
+        }),
+      );
       console.log(fetcher.data);
     }
   }, [fetcher.state, fetcher.data]);
@@ -70,7 +84,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
             >
               <Image
                 alt="product image"
-                source={productData.image?.[0] || ""}
+                source={productData.images?.[0] || ""}
                 height="auto"
                 width="auto"
                 style={{
@@ -88,60 +102,46 @@ const ProductCard: React.FC<ProductCardProps> = ({
         <Text as="p" variant="bodyXs" truncate={true}>
           Contains total {productData.number} variation(s)
         </Text>
-        {shopifyUrl ? (
-          <span
-            style={{
-              display: "flex",
-              justifyContent: "flex-end",
-              gap: "8px",
-              marginTop: "10px",
-            }}
-          >
-            <Link to={shopifyUrl} target="_blank">
-              <Image
-                alt="shopifyIcon"
-                source="/shopify.svg"
-                width={30}
-                height="auto"
-              />
-            </Link>
-            <Link to={productData.amazonUrl} target="_blank">
-              <Image
-                alt="amazonIcon"
-                source="/amazon.svg"
-                width={30}
-                height="auto"
-              />
-            </Link>
-          </span>
-        ) : (
-          <span
-            style={{
-              display: "flex",
-              justifyContent: "space-between",
-              gap: "8px",
-              marginTop: "10px",
-              alignItems: "center",
-            }}
-          >
-            <Button
-              variant="primary"
-              onClick={handleImport}
-              loading={isImporting}
-              disabled={isImporting}
-            >
-              Import to Shopify
-            </Button>
-            <Link to={productData.amazonUrl} target="_blank">
-              <Image
-                alt="amazonIcon"
-                source="/amazon.svg"
-                width={30}
-                height="auto"
-              />
-            </Link>
-          </span>
-        )}
+
+        <span
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            gap: "8px",
+            marginTop: "10px",
+            alignItems: "center",
+          }}
+        >
+          <div>
+            {state?.shopifyUrl ? (
+              <Link to={state.shopifyUrl} target="_blank">
+                <Image
+                  alt="shopifyIcon"
+                  source="/shopify.svg"
+                  width={30}
+                  height="auto"
+                />
+              </Link>
+            ) : (
+              <Button
+                variant="primary"
+                onClick={() => handleImport({ id: productData.id })}
+                loading={state?.loading}
+                disabled={state?.loading}
+              >
+                Import to Shopify
+              </Button>
+            )}
+          </div>
+          <Link to={productData.amazonUrl} target="_blank">
+            <Image
+              alt="amazonIcon"
+              source="/amazon.svg"
+              width={30}
+              height="auto"
+            />
+          </Link>
+        </span>
       </BlockStack>
     </Card>
   );

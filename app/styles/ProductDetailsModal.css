@@ -41,6 +41,10 @@
   flex: 1;
 }
 
+.modal-main-content {
+  margin: 0 20px;
+}
+
 @media (max-width: 767px) {
   .modal-content {
     flex-direction: column;
@@ -73,4 +77,26 @@
 
 .hide-scrollbar::-webkit-scrollbar {
   display: none;
+}
+
+.images-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 20px;
+  padding: 20px;
+}
+
+.image-item {
+  border: 1px solid #e6e6e6;
+  border-radius: 8px;
+  padding: 10px;
+  background: white;
+}
+
+@media (max-width: 767px) {
+  .images-grid {
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 10px;
+    padding: 10px;
+  }
 }

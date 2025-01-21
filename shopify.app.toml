@@ -3,7 +3,7 @@
 client_id = "9b9d33f676295968d460122290321a4c"
 name = "local-app-1"
 handle = "local-app-27"
-application_url = "https://prototype-condo-claimed-preceding.trycloudflare.com"
+application_url = "https://florists-county-shape-leu.trycloudflare.com"
 embedded = true
 
 [build]
@@ -17,9 +17,9 @@ scopes = "write_products"
 
 [auth]
 redirect_urls = [
-  "https://prototype-condo-claimed-preceding.trycloudflare.com/auth/callback",
-  "https://prototype-condo-claimed-preceding.trycloudflare.com/auth/shopify/callback",
-  "https://prototype-condo-claimed-preceding.trycloudflare.com/api/auth/callback"
+  "https://florists-county-shape-leu.trycloudflare.com/auth/callback",
+  "https://florists-county-shape-leu.trycloudflare.com/auth/shopify/callback",
+  "https://florists-county-shape-leu.trycloudflare.com/api/auth/callback"
 ]
 
 [webhooks]

@@ -16,19 +16,24 @@ import pkg from "lodash";
 const { debounce } = pkg;
 import { useFetcher } from "@remix-run/react";
 import ProductDetailsModal from "./ProductDetailsModal";
+import { useDispatch } from "react-redux";
+import { addBulkData } from "app/store/modules/productImportState";
 
 export interface VariantDataType {
-  id: number;
+  id: string;
   optionValues: { optionName: string; name: string }[];
   image: string;
-  price: number;
+  price: {
+    currencyCode: string;
+    amount: number;
+  };
 }
 export interface ProductDataType {
-  id: number;
+  id: string;
   title: string;
   number: number;
   descriptionHtml: string | undefined;
-  image: string[] | undefined;
+  images: string[] | undefined;
   shopifyUrl: string;
   amazonUrl: string;
   productOptions: { [key: string]: string[] };
@@ -57,6 +62,8 @@ const ProductListCard: React.FC<ProductListCardProps> = ({ shop }) => {
   const [selectedProduct, setSelectedProduct] =
     useState<ProductDataType | null>(null);
 
+  const dispatch = useDispatch();
+
   useEffect(() => {
     setTimeout(() => {
       fetcehr.submit(
@@ -78,6 +85,14 @@ const ProductListCard: React.FC<ProductListCardProps> = ({ shop }) => {
     if (fetcehr.data) {
       shopify.toast.show("Loading completed");
       setProductsData(fetcehr.data.data);
+      const data = fetcehr.data.data.map((item: any) => {
+        return {
+          id: item.id,
+          loading: false,
+          shopifyUrl: item?.shopifyUrl,
+        };
+      });
+      dispatch(addBulkData(data));
       setPageInfo(fetcehr.data.pageInfo);
       console.log(fetcehr.data);
       setIsLoading(false);
@@ -251,9 +266,10 @@ const ProductListCard: React.FC<ProductListCardProps> = ({ shop }) => {
         </Layout>
       </Card>
       <ProductDetailsModal
+        shop={shop}
         open={modalOpen}
         onClose={() => setModalOpen(false)}
-        product={selectedProduct}
+        productData={selectedProduct}
       />
     </div>
   );
