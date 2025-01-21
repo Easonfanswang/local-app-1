@@ -4,10 +4,12 @@ import { authenticate } from "../shopify.server";
 import ImportProductBanner from "./components/ImportProductBanner";
 import ProductListCard from "./components/ProductListCard";
 import { productMutations } from "app/api/admin";
+import { useLoaderData } from "@remix-run/react";
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
-  await authenticate.admin(request);
-  return null;
+  const adminAuthResult = await authenticate.admin(request);
+  const { shop } = adminAuthResult.session;
+  return { shop };
 };
 
 // 随机单词数组
@@ -193,21 +195,26 @@ export const action = async ({ request }: ActionFunctionArgs) => {
   }
 
   if ("productData" in formObject) {
-    const productData = JSON.parse(formObject.productData as string);
+    try {
+      const productData = JSON.parse(formObject.productData as string);
 
-    // 调用 productMutations 创建产品
-    await productMutations({
-      request,
-      data: productData,
-    });
+      // 调用 productMutations 创建产品
+      const data = await productMutations({
+        request,
+        data: productData,
+      });
 
-    return { success: true };
+      return data;
+    } catch (error) {
+      console.log("app productData ERROR: ", error);
+    }
   }
 
   return null;
 };
 
 export default function Index() {
+  const { shop } = useLoaderData<typeof loader>();
   return (
     <Page>
       <BlockStack gap="500">
@@ -216,7 +223,7 @@ export default function Index() {
             <ImportProductBanner />
           </Layout.Section>
           <Layout.Section>
-            <ProductListCard />
+            <ProductListCard shop={shop} />
           </Layout.Section>
         </Layout>
       </BlockStack>

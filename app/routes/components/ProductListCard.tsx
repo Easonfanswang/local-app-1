@@ -40,9 +40,11 @@ export interface pageInfoType {
   totalPage: number;
 }
 
-interface ProductListCardProps {}
+interface ProductListCardProps {
+  shop: string;
+}
 
-const ProductListCard: React.FC<ProductListCardProps> = () => {
+const ProductListCard: React.FC<ProductListCardProps> = ({ shop }) => {
   const [productsData, setProductsData] = useState<ProductDataType[]>();
   const [pageInfo, setPageInfo] = useState<pageInfoType>();
   const [isLoading, setIsLoading] = useState<boolean>(true);
@@ -218,6 +220,7 @@ const ProductListCard: React.FC<ProductListCardProps> = () => {
                     <ProductCard
                       productData={productData}
                       onCardClick={handleCardClick}
+                      shop={shop}
                     />
                   </Grid.Cell>
                 ))}

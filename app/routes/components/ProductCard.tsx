@@ -6,24 +6,27 @@ import {
   useActionData,
   useNavigation,
 } from "@remix-run/react";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 
 interface ProductCardProps {
+  shop: string;
   productData: ProductDataType;
   onCardClick: (productData: ProductDataType) => void;
 }
 
 const ProductCard: React.FC<ProductCardProps> = ({
+  shop,
   productData,
   onCardClick,
 }) => {
   const fetcher = useFetcher<any>();
-  const actionData = useActionData<any>();
+  // const actionData = useActionData<any>();
   const navigation = useNavigation();
-  const isLoading =
-    fetcher.state !== "idle" || navigation.state === "submitting";
+  const [isImporting, setIsImporting] = useState(false);
+  const [shopifyUrl, setShopifyUrl] = useState<string>(productData.shopifyUrl);
 
-  const handleImport = () => {
+  const handleImport = async () => {
+    setIsImporting(true);
     fetcher.submit(
       {
         productData: JSON.stringify(productData),
@@ -33,11 +36,21 @@ const ProductCard: React.FC<ProductCardProps> = ({
   };
 
   useEffect(() => {
-    if (!isLoading && actionData?.success) {
-      // webhook 处理完成，更新UI
-      // 可以在这里更新状态或执行其他操作
+    if (fetcher.state === "idle" && fetcher.data?.success) {
+      setIsImporting(false);
+      const shopName = shop.split(".")[0];
+      const url = `https://admin.shopify.com/store/${shopName}/products/${fetcher.data.id}`;
+      setShopifyUrl(url);
+      console.log(fetcher.data);
     }
-  }, [isLoading, actionData]);
+  }, [fetcher.state, fetcher.data]);
+
+  // useEffect(() => {
+  //   if (!isLoading && actionData?.success) {
+  //     // webhook 处理完成，更新UI
+  //     // 可以在这里更新状态或执行其他操作
+  //   }
+  // }, [isLoading, actionData]);
 
   return (
     <Card>
@@ -75,7 +88,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
         <Text as="p" variant="bodyXs" truncate={true}>
           Contains total {productData.number} variation(s)
         </Text>
-        {productData.shopifyUrl ? (
+        {shopifyUrl ? (
           <span
             style={{
               display: "flex",
@@ -84,7 +97,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
               marginTop: "10px",
             }}
           >
-            <Link to={productData.shopifyUrl} target="_blank">
+            <Link to={shopifyUrl} target="_blank">
               <Image
                 alt="shopifyIcon"
                 source="/shopify.svg"
@@ -114,8 +127,8 @@ const ProductCard: React.FC<ProductCardProps> = ({
             <Button
               variant="primary"
               onClick={handleImport}
-              loading={isLoading}
-              disabled={isLoading}
+              loading={isImporting}
+              disabled={isImporting}
             >
               Import to Shopify
             </Button>
