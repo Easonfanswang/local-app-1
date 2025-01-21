@@ -17,6 +17,12 @@ const { debounce } = pkg;
 import { useFetcher } from "@remix-run/react";
 import ProductDetailsModal from "./ProductDetailsModal";
 
+export interface VariantDataType {
+  id: number;
+  optionValues: { optionName: string; name: string }[];
+  image: string;
+  price: number;
+}
 export interface ProductDataType {
   id: number;
   title: string;
@@ -25,6 +31,8 @@ export interface ProductDataType {
   image: string[] | undefined;
   shopifyUrl: string;
   amazonUrl: string;
+  productOptions: { [key: string]: string[] };
+  variants: VariantDataType[];
 }
 
 export interface pageInfoType {

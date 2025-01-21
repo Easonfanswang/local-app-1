@@ -1,6 +1,12 @@
 import { BlockStack, Button, Card, Image, Text } from "@shopify/polaris";
 import { ProductDataType } from "./ProductListCard";
-import { Link, useFetcher } from "@remix-run/react";
+import {
+  Link,
+  useFetcher,
+  useActionData,
+  useNavigation,
+} from "@remix-run/react";
+import { useEffect } from "react";
 
 interface ProductCardProps {
   productData: ProductDataType;
@@ -12,7 +18,10 @@ const ProductCard: React.FC<ProductCardProps> = ({
   onCardClick,
 }) => {
   const fetcher = useFetcher<any>();
-  const isLoading = fetcher.state !== "idle";
+  const actionData = useActionData<any>();
+  const navigation = useNavigation();
+  const isLoading =
+    fetcher.state !== "idle" || navigation.state === "submitting";
 
   const handleImport = () => {
     fetcher.submit(
@@ -23,6 +32,13 @@ const ProductCard: React.FC<ProductCardProps> = ({
     );
   };
 
+  useEffect(() => {
+    if (!isLoading && actionData?.success) {
+      // webhook 处理完成，更新UI
+      // 可以在这里更新状态或执行其他操作
+    }
+  }, [isLoading, actionData]);
+
   return (
     <Card>
       <BlockStack gap="100">
@@ -31,12 +47,14 @@ const ProductCard: React.FC<ProductCardProps> = ({
           style={{ cursor: "pointer" }}
         >
           <BlockStack gap="100">
-            <div style={{
-              height: "180px",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center"
-            }}>
+            <div
+              style={{
+                height: "180px",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
               <Image
                 alt="product image"
                 source={productData.image?.[0] || ""}
@@ -45,7 +63,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
                 style={{
                   maxHeight: "180px",
                   maxWidth: "100%",
-                  objectFit: "contain"
+                  objectFit: "contain",
                 }}
               />
             </div>

@@ -3,7 +3,7 @@
 client_id = "9b9d33f676295968d460122290321a4c"
 name = "local-app-1"
 handle = "local-app-27"
-application_url = "https://pat-consumer-modelling-believed.trycloudflare.com"
+application_url = "https://prototype-condo-claimed-preceding.trycloudflare.com"
 embedded = true
 
 [build]
@@ -17,21 +17,18 @@ scopes = "write_products"
 
 [auth]
 redirect_urls = [
-  "https://pat-consumer-modelling-believed.trycloudflare.com/auth/callback",
-  "https://pat-consumer-modelling-believed.trycloudflare.com/auth/shopify/callback",
-  "https://pat-consumer-modelling-believed.trycloudflare.com/api/auth/callback"
+  "https://prototype-condo-claimed-preceding.trycloudflare.com/auth/callback",
+  "https://prototype-condo-claimed-preceding.trycloudflare.com/auth/shopify/callback",
+  "https://prototype-condo-claimed-preceding.trycloudflare.com/api/auth/callback"
 ]
 
 [webhooks]
-api_version = "2025-01"
+api_version = "2024-07"
 
   [[webhooks.subscriptions]]
-  topics = [ "app/scopes_update" ]
-  uri = "/webhooks/app/scopes_update"
-
-  [[webhooks.subscriptions]]
-  topics = [ "app/uninstalled" ]
-  uri = "/webhooks/app/uninstalled"
+  topics = [ "app/uninstalled", "bulk_operations/finish" ]
+  uri = "/webhooks"
+  compliance_topics = [ "customers/data_request", "customers/redact", "shop/redact" ]
 
 [pos]
 embedded = false
