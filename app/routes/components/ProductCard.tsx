@@ -1,15 +1,17 @@
-import { BlockStack, Button, Card, Image, Text } from "@shopify/polaris";
-import { ProductDataType } from "./ProductListCard";
 import {
-  Link,
-  useFetcher,
-} from "@remix-run/react";
+  BlockStack,
+  Button,
+  Card,
+  Image,
+  Text,
+  Tooltip,
+  UnstyledLink,
+} from "@shopify/polaris";
+import { ProductDataType } from "./ProductListCard";
+import { useFetcher } from "@remix-run/react";
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import {
-  selectProductById,
-  updateData,
-} from "app/store/modules/productImportState";
+import { updateData } from "app/store/modules/productImportState";
 
 interface ProductCardProps {
   shop: string;
@@ -26,7 +28,9 @@ const ProductCard: React.FC<ProductCardProps> = ({
   // const actionData = useActionData<any>();
   const dispatch = useDispatch();
   const state = useSelector((state: any) =>
-    selectProductById(state, productData.id),
+    state.productImportState.rows.find(
+      (item: any) => item.id === productData.id,
+    ),
   );
 
   const handleImport = async ({ id }: { id: string }) => {
@@ -51,7 +55,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
       dispatch(
         updateData({
           id: productData.id,
-          loading: true,
+          loading: false,
           shopifyUrl: url,
         }),
       );
@@ -114,14 +118,20 @@ const ProductCard: React.FC<ProductCardProps> = ({
         >
           <div>
             {state?.shopifyUrl ? (
-              <Link to={state.shopifyUrl} target="_blank">
-                <Image
-                  alt="shopifyIcon"
-                  source="/shopify.svg"
-                  width={30}
-                  height="auto"
-                />
-              </Link>
+              <UnstyledLink to={state.shopifyUrl} target="_blank">
+                <Tooltip
+                  dismissOnMouseOut
+                  content="View on Shopify"
+                  preferredPosition="above"
+                >
+                  <Image
+                    alt="shopifyIcon"
+                    source="/shopify.svg"
+                    width={30}
+                    height="auto"
+                  />
+                </Tooltip>
+              </UnstyledLink>
             ) : (
               <Button
                 variant="primary"
@@ -133,14 +143,21 @@ const ProductCard: React.FC<ProductCardProps> = ({
               </Button>
             )}
           </div>
-          <Link to={productData.amazonUrl} target="_blank">
-            <Image
-              alt="amazonIcon"
-              source="/amazon.svg"
-              width={30}
-              height="auto"
-            />
-          </Link>
+
+          <UnstyledLink
+            to={productData.amazonUrl}
+            target="_blank"
+            className="Polaris-Link"
+          >
+            <Tooltip dismissOnMouseOut content="View on Amazon">
+              <Image
+                alt="amazonIcon"
+                source="/amazon.svg"
+                width={30}
+                height="auto"
+              />
+            </Tooltip>
+          </UnstyledLink>
         </span>
       </BlockStack>
     </Card>

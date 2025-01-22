@@ -5,16 +5,14 @@ import { useState, useRef, useCallback, useEffect } from "react";
 import "../../styles/ProductDetailsModal.css";
 import { useFetcher } from "@remix-run/react";
 import { useDispatch, useSelector } from "react-redux";
-import {
-  selectProductById,
-  updateData,
-} from "app/store/modules/productImportState";
+import { updateData } from "app/store/modules/productImportState";
+import { convertDescriptionToHtml } from "../app._index";
 
 interface ProductDetailsModalProps {
   shop: string;
   open: boolean;
   onClose: () => void;
-  productData: ProductDataType | null;
+  productData: ProductDataType;
 }
 
 const ProductDetailsModal: React.FC<ProductDetailsModalProps> = ({
@@ -23,15 +21,15 @@ const ProductDetailsModal: React.FC<ProductDetailsModalProps> = ({
   onClose,
   productData,
 }) => {
-  if (!productData) return null;
-
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [selectedTab, setSelectedTab] = useState(0);
   const thumbnailsRef = useRef<HTMLDivElement>(null);
   const fetcher = useFetcher<any>();
   const dispatch = useDispatch();
   const state = useSelector((state: any) =>
-    selectProductById(state, productData.id),
+    state.productImportState.rows.find(
+      (item: any) => item.id === productData.id,
+    ),
   );
 
   useEffect(() => {
@@ -41,7 +39,7 @@ const ProductDetailsModal: React.FC<ProductDetailsModalProps> = ({
       dispatch(
         updateData({
           id: productData.id,
-          loading: true,
+          loading: false,
           shopifyUrl: url,
         }),
       );
@@ -83,6 +81,14 @@ const ProductDetailsModal: React.FC<ProductDetailsModalProps> = ({
       },
       { method: "POST" },
     );
+  };
+
+  const handleClose = () => {
+    console.log(selectedTab);
+    setSelectedIndex(0);
+    setSelectedTab(0);
+    console.log(selectedTab);
+    onClose();
   };
 
   const tabs = [
@@ -139,53 +145,18 @@ const ProductDetailsModal: React.FC<ProductDetailsModalProps> = ({
 
               {/* 缩略图区域容器 */}
               <div className="thumbnail-scrolling">
-                {/* 仅在PC端显示箭头 */}
-                {window.innerWidth >= 768 && (
+                {(productData?.images?.length || 0) > 4 && (
                   <>
-                    {/* 左箭头 */}
                     <button
                       onClick={() => handleScroll("left")}
-                      style={{
-                        position: "absolute",
-                        left: 0,
-                        top: "50%",
-                        transform: "translateY(-50%)",
-                        zIndex: 1,
-                        border: "none",
-                        background: "white",
-                        boxShadow: "0 2px 5px rgba(0,0,0,0.1)",
-                        borderRadius: "50%",
-                        width: "32px",
-                        height: "32px",
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        cursor: "pointer",
-                      }}
+                      className="scroll-button left"
                     >
                       <Icon source={ChevronLeftIcon} tone="base" />
                     </button>
 
-                    {/* 右箭头 */}
                     <button
                       onClick={() => handleScroll("right")}
-                      style={{
-                        position: "absolute",
-                        right: 0,
-                        top: "50%",
-                        transform: "translateY(-50%)",
-                        zIndex: 1,
-                        border: "none",
-                        background: "white",
-                        boxShadow: "0 2px 5px rgba(0,0,0,0.1)",
-                        borderRadius: "50%",
-                        width: "32px",
-                        height: "32px",
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        cursor: "pointer",
-                      }}
+                      className="scroll-button right"
                     >
                       <Icon source={ChevronRightIcon} tone="base" />
                     </button>
@@ -196,7 +167,7 @@ const ProductDetailsModal: React.FC<ProductDetailsModalProps> = ({
                 <div ref={thumbnailsRef} className="hide-scrollbar">
                   {productData?.images?.map((img, index) => (
                     <div
-                      key={index}
+                      key={`thumbnail-${index}-${img}`}
                       onClick={() => setSelectedIndex(index)}
                       className="thumbnail"
                       style={{
@@ -254,7 +225,10 @@ const ProductDetailsModal: React.FC<ProductDetailsModalProps> = ({
                 {productData?.productOptions &&
                   Object.entries(productData.productOptions).map(
                     ([optionName, values]) => (
-                      <div key={optionName} style={{ marginBottom: "16px" }}>
+                      <div
+                        key={`option-${optionName}`}
+                        style={{ marginBottom: "16px" }}
+                      >
                         <Text as="p" variant="bodyMd" fontWeight="bold">
                           {optionName}:
                         </Text>
@@ -294,7 +268,7 @@ const ProductDetailsModal: React.FC<ProductDetailsModalProps> = ({
           <div className="modal-main-content">
             <div
               dangerouslySetInnerHTML={{
-                __html: productData?.descriptionHtml || "",
+                __html: descriptionHtml || "",
               }}
             />
           </div>
@@ -304,7 +278,7 @@ const ProductDetailsModal: React.FC<ProductDetailsModalProps> = ({
         return (
           <div className="images-grid">
             {productData?.images?.map((img, index) => (
-              <div key={index} className="image-item">
+              <div key={`grid-image-${index}-${img}`} className="image-item">
                 <img
                   src={img}
                   alt={`${productData?.title} - ${index + 1}`}
@@ -320,16 +294,28 @@ const ProductDetailsModal: React.FC<ProductDetailsModalProps> = ({
         );
 
       case 3: // Variations
-        const rowMarkup = productData?.variants.map(
-          ({ id, image, optionValues, price }, index) => (
-            <IndexTable.Row id={id} key={id} position={index}>
-              <IndexTable.Cell>
-                <Image alt="" source={image} width={60} height={60}></Image>
-              </IndexTable.Cell>
-              <IndexTable.Cell>
-                {optionValues.map((optionValue) => {
-                  return (
-                    <div>
+        return (
+          <IndexTable
+            headings={[
+              { title: "Image" },
+              { title: "Options" },
+              { title: "Price" },
+            ]}
+            itemCount={productData?.variants?.length || 0}
+            selectable={false}
+          >
+            {productData?.variants?.map((variant, index) => (
+              <IndexTable.Row
+                id={variant.id}
+                key={`variant-${variant.id}-${index}`}
+                position={index}
+              >
+                <IndexTable.Cell>
+                  <Image source={variant.image} alt="" width={60} />
+                </IndexTable.Cell>
+                <IndexTable.Cell>
+                  {variant.optionValues.map((optionValue) => (
+                    <div key={`${variant.id}-${optionValue.name}`}>
                       <Text variant="bodyMd" fontWeight="bold" as="span">
                         {optionValue.optionName}
                         {": "}
@@ -338,46 +324,32 @@ const ProductDetailsModal: React.FC<ProductDetailsModalProps> = ({
                         {optionValue.name}
                       </Text>
                     </div>
-                  );
-                })}
-              </IndexTable.Cell>
-              <IndexTable.Cell>
-                <Text variant="bodyMd" fontWeight="bold" as="span">
-                  {price.currencyCode}{" "}
-                </Text>
-                <Text variant="bodyMd" as="span">
-                  {price.amount}
-                </Text>
-              </IndexTable.Cell>
-            </IndexTable.Row>
-          ),
-        );
-        return (
-          <div className="modal-main-content">
-            <IndexTable
-              headings={[
-                { title: "Image" },
-                { title: "Options" },
-                { title: "Product Price" },
-              ]}
-              itemCount={productData?.variants.length || 0}
-              selectable={false}
-            >
-              {rowMarkup}
-            </IndexTable>
-          </div>
+                  ))}
+                </IndexTable.Cell>
+                <IndexTable.Cell>
+                  <Text variant="bodyMd" fontWeight="bold" as="span">
+                    {variant.price.currencyCode}{" "}
+                  </Text>
+                  <Text variant="bodyMd" as="span">
+                    {variant.price.amount}
+                  </Text>
+                </IndexTable.Cell>
+              </IndexTable.Row>
+            ))}
+          </IndexTable>
         );
 
       default:
         return null;
     }
   };
+  const descriptionHtml = convertDescriptionToHtml(productData?.description);
 
   return (
     <Modal
       open={open}
       onClose={onClose}
-      title={productData.title}
+      title={productData?.title || ""}
       titleHidden
       size="large"
       primaryAction={
@@ -389,22 +361,31 @@ const ProductDetailsModal: React.FC<ProductDetailsModalProps> = ({
             }
           : {
               content: "Import to Shopify",
-              onAction: () => handleImport({ id: productData.id }),
+              onAction: () =>
+                productData && handleImport({ id: productData.id }),
               loading: state?.loading,
-              disabled: state?.loading,
+              disabled: !productData || state?.loading,
             }
       }
       secondaryActions={[
         {
           content: "Close",
-          onAction: onClose,
+          onAction: handleClose,
         },
       ]}
     >
       <Modal.Section>
-        <Tabs tabs={tabs} selected={selectedTab} onSelect={handleTabChange}>
-          {renderTabContent()}
-        </Tabs>
+        {productData ? (
+          <Tabs tabs={tabs} selected={selectedTab} onSelect={handleTabChange}>
+            {renderTabContent()}
+          </Tabs>
+        ) : (
+          <div style={{ padding: "16px", textAlign: "center" }}>
+            <Text as="p" variant="bodyMd">
+              No product data available
+            </Text>
+          </div>
+        )}
       </Modal.Section>
     </Modal>
   );

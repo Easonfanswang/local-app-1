@@ -69,13 +69,3 @@ export const { updateData, addData, addBulkData } =
 
 const reducer = ProductImportStateSlice.reducer;
 export default reducer;
-
-// 选择器
-export const selectProductImportState = (state: {
-  productImportState: ProductImportStateRowType[];
-}) => state.productImportState;
-
-export const selectProductById = (
-  state: { productImportState: ProductImportStateRowType[] },
-  id: string,
-) => state.productImportState.find((item) => item.id === id);

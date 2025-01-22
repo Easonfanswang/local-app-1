@@ -32,7 +32,7 @@ export interface ProductDataType {
   id: string;
   title: string;
   number: number;
-  descriptionHtml: string | undefined;
+  description: any;
   images: string[] | undefined;
   shopifyUrl: string;
   amazonUrl: string;
@@ -60,25 +60,23 @@ const ProductListCard: React.FC<ProductListCardProps> = ({ shop }) => {
   const fetcehr = useFetcher<any>();
   const [modalOpen, setModalOpen] = useState(false);
   const [selectedProduct, setSelectedProduct] =
-    useState<ProductDataType | null>(null);
+    useState<ProductDataType>(initialProduct);
 
   const dispatch = useDispatch();
 
   useEffect(() => {
-    setTimeout(() => {
-      fetcehr.submit(
-        {
+    fetcehr.submit(
+      {
+        loading: JSON.stringify({
           loading: JSON.stringify({
-            loading: JSON.stringify({
-              page: 1,
-              searchValue: "",
-              filter: "1",
-            }),
+            page: 1,
+            searchValue: "",
+            filter: "1",
           }),
-        },
-        { method: "POST" },
-      );
-    }, 3000);
+        }),
+      },
+      { method: "POST" },
+    );
   }, []);
 
   useEffect(() => {
@@ -187,7 +185,7 @@ const ProductListCard: React.FC<ProductListCardProps> = ({ shop }) => {
   }, []);
 
   return (
-    <div>
+    <>
       <Card>
         <Layout>
           <Layout.Section>
@@ -271,7 +269,7 @@ const ProductListCard: React.FC<ProductListCardProps> = ({ shop }) => {
         onClose={() => setModalOpen(false)}
         productData={selectedProduct}
       />
-    </div>
+    </>
   );
 };
 
@@ -280,5 +278,27 @@ const options = [
   { label: "Imported to Shopify", value: "2" },
   { label: "Not Imported", value: "3" },
 ];
+
+const initialProduct: ProductDataType = {
+  id: "",
+  title: "",
+  number: 0,
+  description: "",
+  images: [],
+  shopifyUrl: "",
+  amazonUrl: "",
+  productOptions: {},
+  variants: [
+    {
+      id: "",
+      optionValues: [],
+      image: "",
+      price: {
+        currencyCode: "USD",
+        amount: 0,
+      },
+    },
+  ],
+};
 
 export default ProductListCard;

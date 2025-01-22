@@ -3,7 +3,7 @@
 client_id = "9b9d33f676295968d460122290321a4c"
 name = "local-app-1"
 handle = "local-app-27"
-application_url = "https://florists-county-shape-leu.trycloudflare.com"
+application_url = "https://hoped-throughout-tire-tubes.trycloudflare.com"
 embedded = true
 
 [build]
@@ -17,9 +17,9 @@ scopes = "write_products"
 
 [auth]
 redirect_urls = [
-  "https://florists-county-shape-leu.trycloudflare.com/auth/callback",
-  "https://florists-county-shape-leu.trycloudflare.com/auth/shopify/callback",
-  "https://florists-county-shape-leu.trycloudflare.com/api/auth/callback"
+  "https://hoped-throughout-tire-tubes.trycloudflare.com/auth/callback",
+  "https://hoped-throughout-tire-tubes.trycloudflare.com/auth/shopify/callback",
+  "https://hoped-throughout-tire-tubes.trycloudflare.com/api/auth/callback"
 ]
 
 [webhooks]

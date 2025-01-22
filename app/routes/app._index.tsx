@@ -57,11 +57,142 @@ const generateRandomTitle = () => {
 
 // 生成随机描述
 const generateRandomDescription = () => {
-  const descLength = Math.floor(Math.random() * 10) + 5; // 5-14个单词
-  return `<p>${Array(descLength)
-    .fill(null)
-    .map(() => words[Math.floor(Math.random() * words.length)])
-    .join(" ")}</p>`;
+  // 生成随机句子
+  const generateRandomSentence = (
+    minWords: number = 5,
+    maxWords: number = 15,
+  ) => {
+    const length = Math.floor(Math.random() * (maxWords - minWords)) + minWords;
+    return (
+      Array(length)
+        .fill(null)
+        .map(() => words[Math.floor(Math.random() * words.length)])
+        .join(" ") + "."
+    );
+  };
+
+  // 生成随机特性数组
+  const generateRandomFeatures = () => {
+    const length = Math.floor(Math.random() * 5) + 3; // 3-7个特性
+    return Array(length)
+      .fill(null)
+      .map(() => ` ${generateRandomSentence(3, 8)} `);
+  };
+
+  // 生成随机对象
+  const generateRandomObject = (
+    minProps: number = 3,
+    maxProps: number = 10,
+  ) => {
+    const length = Math.floor(Math.random() * (maxProps - minProps)) + minProps;
+    const obj: Record<string, string> = {};
+
+    Array(length)
+      .fill(null)
+      .forEach(() => {
+        // 生成随机key（1-3个单词）
+        const key = Array(Math.floor(Math.random() * 3) + 1)
+          .fill(null)
+          .map(() => words[Math.floor(Math.random() * words.length)])
+          .join(" ");
+
+        // 生成随机value（1-5个单词）
+        const value = Array(Math.floor(Math.random() * 5) + 1)
+          .fill(null)
+          .map(() => words[Math.floor(Math.random() * words.length)])
+          .join(" ");
+
+        obj[key] = value;
+      });
+
+    return obj;
+  };
+
+  return {
+    PDS: ` <span>${generateRandomSentence(10, 30)}</span> `,
+
+    PF: generateRandomFeatures(),
+
+    PI: generateRandomObject(10, 20),
+
+    PO: generateRandomObject(3, 6),
+  };
+};
+
+export const convertDescriptionToHtml = (description: any) => {
+  // 如果整个 description 对象不存在，返回空字符串
+  if (!description) return "";
+
+  // 构建 Product Overview (PO) HTML
+  const poHtml = description.PO
+    ? `
+    <div>
+      <p><strong>Product Overview</strong></p>
+      <ul>
+        ${Object.entries(description.PO)
+          .map(
+            ([key, value]) =>
+              `<li><strong>${key}:</strong> ${value || ""}</li>`,
+          )
+          .join("")}
+      </ul>
+      <br>
+    </div>
+  `
+    : "";
+
+  // 构建 Product Description (PDS) HTML
+  const pdsHtml = description.PDS
+    ? `
+    <p><strong>Product Description</strong></p>
+    <div id="productDescription" class="a-section a-spacing-small">
+      <p>${description.PDS}</p>
+    </div>
+    <br><br>
+  `
+    : "";
+
+  // 构建 Product Features (PF) HTML
+  const pfHtml = description.PF?.length
+    ? `
+    <p><strong>Product Features</strong></p>
+    <ul>
+      ${description.PF.map((feature: any) => `<li>${feature || ""}</li>`).join("")}
+    </ul>
+    <br>
+  `
+    : "";
+
+  // 构建 Product Information (PI) HTML
+  const piHtml = description.PI
+    ? `
+    <p><strong>Product Information</strong></p>
+    <div style="margin-bottom:20px">
+    <table style="margin-bottom:20px">
+      <tbody>
+        ${Object.entries(description.PI)
+          .map(
+            ([key, value]) => `
+          <tr>
+            <td><strong>${key}</strong></td>
+            <td><span style="margin-left:20px">${value || ""}</span></td>
+          </tr>
+        `,
+          )
+          .join("")}
+      </tbody>
+    </table>
+    <br>
+  `
+    : "";
+
+  // 如果所有部分都为空，返回空字符串
+  if (!poHtml && !pdsHtml && !pfHtml && !piHtml) {
+    return "";
+  }
+
+  // 组合所有HTML
+  return `<div>${poHtml}${pdsHtml}${pfHtml}${piHtml}</div>`;
 };
 
 // 生成随机数据数组
@@ -72,7 +203,7 @@ const generateRandomData = () => {
       id: (index + 1).toString(),
       title: generateRandomTitle(),
       number: Math.floor(Math.random() * 100) + 1,
-      descriptionHtml: generateRandomDescription(),
+      description: generateRandomDescription(),
       productOptions: {
         Color: ["Red", "Green", "Blue"],
         Size: ["Small", "Medium", "Large"],
@@ -216,8 +347,6 @@ export const action = async ({ request }: ActionFunctionArgs) => {
         totalPage: 30,
       },
     };
-    // 处理第二个 fetcher 的请求
-    console.log("data:", data);
     return data;
   }
 
